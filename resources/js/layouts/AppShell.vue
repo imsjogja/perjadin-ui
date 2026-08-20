@@ -1,13 +1,16 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import {
     Bars3Icon,
     ChevronDownIcon,
     ClipboardDocumentListIcon,
+    Cog6ToothIcon,
     DocumentPlusIcon,
     HomeIcon,
+    ShieldCheckIcon,
     UserCircleIcon,
+    UserGroupIcon,
     UsersIcon,
 } from '@heroicons/vue/24/outline';
 import menuCatalog from '../shared/menu-catalog.json';
@@ -15,7 +18,7 @@ import { resolveIconColor } from '../shared/icon-colors';
 import { useAuth } from '../shared/composables/useAuth';
 
 const route = useRoute();
-const { user, logout } = useAuth();
+const { can, isAuthenticated, user, logout, refreshUser } = useAuth();
 const sidebarOpen = ref(false);
 const userOpen = ref(false);
 
@@ -24,9 +27,20 @@ const iconMap = {
     ClipboardDocumentListIcon,
     DocumentPlusIcon,
     UsersIcon,
+    UserGroupIcon,
+    ShieldCheckIcon,
+    Cog6ToothIcon,
 };
 
 const pageTitle = computed(() => route.meta?.title ?? 'Perjadin');
+const visibleMenuCatalog = computed(() =>
+    menuCatalog
+        .map((section) => ({
+            ...section,
+            items: section.items.filter((item) => can(item.permission)),
+        }))
+        .filter((section) => section.items.length > 0),
+);
 
 function iconFor(name) {
     return iconMap[name] ?? ClipboardDocumentListIcon;
@@ -36,6 +50,16 @@ async function signOut() {
     await logout();
     userOpen.value = false;
 }
+
+onMounted(async () => {
+    if (!isAuthenticated.value) return;
+
+    try {
+        await refreshUser();
+    } catch {
+        // Kegagalan autentikasi sudah ditangani pada composable sesi.
+    }
+});
 </script>
 
 <template>
@@ -51,7 +75,9 @@ async function signOut() {
             </button>
 
             <RouterLink :to="{ name: 'dashboard.index' }" class="flex items-center gap-2 rounded-md px-1 py-1 hover:bg-white/10">
-                <span class="flex h-8 w-8 items-center justify-center rounded-md bg-white/10 text-sm font-bold ring-1 ring-white/25">P</span>
+                <span class="flex h-8 w-8 items-center justify-center rounded-md bg-white p-0.5 ring-1 ring-white/25">
+                    <img src="/logo-pabar.png" alt="Lambang Provinsi Papua Barat" class="h-full w-full object-contain" />
+                </span>
                 <span class="text-sm font-bold">PERJADIN</span>
             </RouterLink>
             <h1 class="hidden truncate border-l border-white/20 pl-3 text-sm font-semibold sm:block">{{ pageTitle }}</h1>
@@ -94,7 +120,7 @@ async function signOut() {
             aria-label="Navigasi utama"
         >
             <nav class="flex-1 overflow-y-auto p-2">
-                <div v-for="section in menuCatalog" :key="section.section" class="mb-4">
+                <div v-for="section in visibleMenuCatalog" :key="section.section" class="mb-4">
                     <p class="px-3 py-2 text-xs font-bold uppercase tracking-wide text-menu-header">{{ section.section }}</p>
                     <RouterLink
                         v-for="item in section.items"

@@ -16,7 +16,7 @@ const workflow = [
     },
     {
         title: 'Tambahkan pelaksana',
-        text: 'Tambahkan pegawai dari SIKKEPO langsung pada detail SPT.',
+        text: 'Tambahkan pegawai langsung pada detail SPT.',
         route: 'spt.index',
         icon: UserPlusIcon,
     },
@@ -33,7 +33,7 @@ const workflow = [
     <div>
         <PageHeader title="Dashboard" subtitle="Mulai dan pantau proses administrasi perjalanan dinas." />
 
-        <AppCard title="Alur kerja Perjadin" subtitle="Data pegawai dibaca dari SIKKEPO melalui Perjadin API.">
+        <AppCard title="Alur kerja Perjadin" subtitle="Data pegawai tersedia melalui layanan referensi aplikasi.">
             <ol class="grid gap-4 md:grid-cols-3">
                 <li v-for="(step, index) in workflow" :key="step.title" class="rounded-md border bg-light/40 p-4">
                     <div class="flex items-center gap-3">

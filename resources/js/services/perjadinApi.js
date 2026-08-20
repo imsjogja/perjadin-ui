@@ -15,7 +15,9 @@ function token() {
 
 function queryString(params = {}) {
     const query = new URLSearchParams(
-        Object.entries(params).filter(([, value]) => value !== '' && value !== null && value !== undefined),
+        Object.entries(params)
+            .filter(([, value]) => value !== '' && value !== null && value !== undefined)
+            .map(([key, value]) => [key, typeof value === 'boolean' ? Number(value) : value]),
     );
 
     return query.size ? `?${query}` : '';
@@ -41,12 +43,65 @@ async function request(path, options = {}) {
     return payload;
 }
 
+async function previewPdf(path) {
+    // Open the tab before awaiting the API response so browsers do not treat
+    // the preview as an unsolicited popup.
+    const preview = window.open('', '_blank');
+
+    if (!preview) {
+        throw new ApiError('Popup preview diblokir oleh browser. Izinkan popup untuk aplikasi ini.', 0);
+    }
+
+    preview.opener = null;
+
+    try {
+        const response = await fetch(`${baseUrl}${path}`, {
+            headers: {
+                Accept: 'application/pdf, application/json',
+                ...(token() ? { Authorization: `Bearer ${token()}` } : {}),
+            },
+        });
+
+        if (!response.ok) {
+            if (response.status === 401) localStorage.removeItem('perjadin.access_token');
+
+            const payload = await response.json().catch(() => ({}));
+            throw new ApiError(payload.message ?? 'Dokumen tidak dapat dipreview.', response.status, payload.errors ?? {});
+        }
+
+        const blobUrl = URL.createObjectURL(await response.blob());
+        preview.location.replace(blobUrl);
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 300000);
+    } catch (exception) {
+        preview.close();
+
+        if (exception instanceof ApiError) throw exception;
+        throw new ApiError('Dokumen tidak dapat diakses. Periksa koneksi lalu coba lagi.', 0);
+    }
+}
+
 export const perjadinApi = {
     login: (payload) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
     logout: () => request('/auth/logout', { method: 'POST' }),
+    me: () => request('/me'),
+    users: () => request('/users'),
+    createUser: (payload) => request('/users', { method: 'POST', body: JSON.stringify(payload) }),
+    updateUser: (id, payload) => request(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+    deleteUser: (id) => request(`/users/${id}`, { method: 'DELETE' }),
+    roles: () => request('/roles'),
+    createRole: (payload) => request('/roles', { method: 'POST', body: JSON.stringify(payload) }),
+    updateRole: (id, payload) => request(`/roles/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+    deleteRole: (id) => request(`/roles/${id}`, { method: 'DELETE' }),
+    documentNumberFormats: () => request('/settings/document-number-formats'),
+    updateDocumentNumberFormats: (payload) => request('/settings/document-number-formats', {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+    }),
     spts: (params) => request(`/spts${queryString(params)}`),
     spt: (id) => request(`/spts/${id}`),
     createSpt: (payload) => request('/spts', { method: 'POST', body: JSON.stringify(payload) }),
+    updateSpt: (id, payload) => request(`/spts/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+    units: (params) => request(`/references/units${queryString(params)}`),
     pegawai: (params) => request(`/references/pegawai${queryString(params)}`),
     assignees: (sptId) => request(`/spts/${sptId}/assignees`),
     addAssignees: (sptId, nips) => request(`/spts/${sptId}/assignees`, {
@@ -57,5 +112,12 @@ export const perjadinApi = {
         method: 'POST',
         body: JSON.stringify(payload),
     }),
+    sppd: (id) => request(`/sppds/${id}`),
+    updateSppd: (id, payload) => request(`/sppds/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+    deleteSppd: (id) => request(`/sppds/${id}`, { method: 'DELETE' }),
     verifySppd: (sppdId) => request(`/sppds/${sppdId}/verification`, { method: 'PATCH' }),
+    printSpt: (sptId) => previewPdf(`/spts/${sptId}/print`),
+    previewSppd: (sppdId) => previewPdf(`/sppds/${sppdId}/preview`),
+    printSppd: (sppdId) => previewPdf(`/sppds/${sppdId}/print`),
+    printVisum: (sppdId) => previewPdf(`/sppds/${sppdId}/visum`),
 };

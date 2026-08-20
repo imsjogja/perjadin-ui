@@ -8,14 +8,21 @@
     {
         "section": "Perjalanan Dinas",
         "items": [
-            { "label": "Surat Tugas", "icon": "ClipboardDocumentListIcon", "route": "spt.index", "color": "indigo" },
-            { "label": "Buat Surat Tugas", "icon": "DocumentPlusIcon", "route": "spt.create", "color": "green" }
+            { "label": "Surat Tugas", "icon": "ClipboardDocumentListIcon", "route": "spt.index", "color": "indigo" }
         ]
     },
     {
         "section": "Referensi",
         "items": [
             { "label": "Cari Pegawai", "icon": "UsersIcon", "route": "pegawai.index", "color": "purple" }
+        ]
+    },
+    {
+        "section": "Administrasi",
+        "items": [
+            { "label": "Pengguna", "icon": "UserGroupIcon", "route": "user.index", "color": "blue", "permission": "users.manage" },
+            { "label": "Role", "icon": "ShieldCheckIcon", "route": "role.index", "color": "indigo", "permission": "roles.manage" },
+            { "label": "Format Nomor", "icon": "Cog6ToothIcon", "route": "document-number-format.index", "color": "teal", "permission": "settings.manage" }
         ]
     }
 ]

@@ -1,0 +1,11 @@
+name: perjadin-ui
+
+services:
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env.local
+    ports:
+      - "5175:80"

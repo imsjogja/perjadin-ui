@@ -95,7 +95,7 @@ const primaryKey = computed(() => props.columns.find((c) => c.priority === 1)?.k
 </script>
 
 <template>
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-3 p-2">
         <div v-if="searchable" class="relative max-w-xs">
             <MagnifyingGlassIcon
                 class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"

@@ -42,7 +42,7 @@ async function search() {
     <div>
         <div class="mb-4">
             <h1 class="text-lg font-bold text-dark">Cari Pegawai</h1>
-            <p class="mt-0.5 text-sm text-slate-500">Referensi read-only dari SIKKEPO melalui Perjadin API.</p>
+            <p class="mt-0.5 text-sm text-slate-500">Referensi pegawai hanya-baca untuk mendukung administrasi perjalanan dinas.</p>
         </div>
 
         <AppCard>

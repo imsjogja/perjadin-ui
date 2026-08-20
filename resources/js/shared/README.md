@@ -1,6 +1,6 @@
 # Shared UI — Perjadin
 
-Direktori ini memuat material antarmuka yang dimigrasikan dari `sikkepo-v4-ui` dan digunakan ulang oleh seluruh konteks Perjadin. Komponen memakai Vue 3 `<script setup>`, Tailwind token, serta pola aksesibilitas dasar.
+Direktori ini memuat material antarmuka yang digunakan ulang oleh seluruh konteks Perjadin. Komponen memakai Vue 3 `<script setup>`, Tailwind token, serta pola aksesibilitas dasar.
 
 ## Komponen yang Dipakai
 
