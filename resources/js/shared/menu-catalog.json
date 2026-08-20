@@ -1,0 +1,21 @@
+[
+    {
+        "section": "Utama",
+        "items": [
+            { "label": "Dashboard", "icon": "HomeIcon", "route": "dashboard.index", "color": "blue" }
+        ]
+    },
+    {
+        "section": "Perjalanan Dinas",
+        "items": [
+            { "label": "Surat Tugas", "icon": "ClipboardDocumentListIcon", "route": "spt.index", "color": "indigo" },
+            { "label": "Buat Surat Tugas", "icon": "DocumentPlusIcon", "route": "spt.create", "color": "green" }
+        ]
+    },
+    {
+        "section": "Referensi",
+        "items": [
+            { "label": "Cari Pegawai", "icon": "UsersIcon", "route": "pegawai.index", "color": "purple" }
+        ]
+    }
+]

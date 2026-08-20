@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Token CSS custom properties — sumber: Color Admin v5.5.2 varian "apple"
+ * dengan theme color "black" (brand tetap skala hitam #1f2225/#000000).
+ * Variabel ini menjadi jembatan untuk dark mode (strategi `class` pada <html>).
+ * Implementasi dark mode saat ini minimal; cukup override variabel di bawah `.dark`.
+ */
+:root {
+    --color-brand: #1f2225;
+    --color-success: #4cd964;
+    --color-warning: #ff9500;
+    --color-danger: #ff3b30;
+    --color-info: #5ac8fa;
+    --color-body-bg: #e4e7e8;
+    --color-surface: #ffffff;
+    --color-dark: #383838;
+    --color-light: #f2f3f4;
+    --color-border: #d3d3d3;
+}
+
+.dark {
+    --color-body-bg: #1f2225;
+    --color-surface: #2a2d31;
+    --color-border: #3a3d42;
+}
+
+@layer base {
+    body {
+        @apply bg-body-bg font-sans text-dark antialiased;
+    }
+}
+
+@layer components {
+    /* Kelas utilitas kecil yang dipakai lintas komponen.
+       Shadow md (apple) + border halus agar kartu tidak terkesan flat. */
+    .card {
+        @apply rounded-lg border bg-surface shadow-md;
+    }
+}
