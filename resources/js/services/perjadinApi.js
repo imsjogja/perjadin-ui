@@ -84,6 +84,7 @@ export const perjadinApi = {
     login: (payload) => request('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),
     logout: () => request('/auth/logout', { method: 'POST' }),
     me: () => request('/me'),
+    dashboard: (params) => request(`/dashboard${queryString(params)}`),
     users: () => request('/users'),
     createUser: (payload) => request('/users', { method: 'POST', body: JSON.stringify(payload) }),
     updateUser: (id, payload) => request(`/users/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
