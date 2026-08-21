@@ -71,6 +71,13 @@ const existingAssigneeNips = computed(() =>
         .map((item) => item.employee_snapshot?.nip)
         .filter(Boolean),
 );
+const basisItems = computed(() => {
+    const bases = (spt.value?.bases ?? [])
+        .map((basis) => basis.content)
+        .filter(Boolean);
+
+    return bases.length ? bases : spt.value?.dasar ? [spt.value.dasar] : [];
+});
 
 function pegawaiLabel(pegawai) {
     const identity = [pegawai.nip, pegawai.nama].filter(Boolean).join(' — ');
@@ -146,11 +153,7 @@ function openSppd(row) {
 
 function manageSppd(row) {
     if (row.sppd) {
-        router.push(
-            row.sppd.status === 'draft'
-                ? { name: 'sppd.edit', params: { sppdId: row.sppd.id } }
-                : { name: 'sppd.show', params: { id: row.sppd.id } },
-        );
+        router.push({ name: 'sppd.show', params: { id: row.sppd.id } });
         return;
     }
 
@@ -186,7 +189,12 @@ onMounted(load);
                     <div><dt class="text-slate-500">Penandatangan</dt><dd class="mt-1 font-semibold text-dark">{{ spt.signatory?.employee_snapshot?.nama ?? '-' }}</dd></div>
                     <div><dt class="text-slate-500">Revisi pelaksana</dt><dd class="mt-1 font-semibold text-dark">{{ spt.assignment_revision }}</dd></div>
                 </dl>
-                <div class="mt-4 border-t pt-4 text-sm text-slate-600"><span class="font-semibold text-dark">Dasar:</span> {{ spt.dasar }}</div>
+                <div class="mt-4 border-t pt-4 text-sm text-slate-600">
+                    <p class="font-semibold text-dark">Dasar:</p>
+                    <ol class="mt-1 list-[upper-alpha] space-y-1 pl-5">
+                        <li v-for="basis in basisItems" :key="basis">{{ basis }}</li>
+                    </ol>
+                </div>
             </AppCard>
 
             <AppCard title="Tambah Pelaksana" subtitle="Cari dan pilih pegawai langsung pada kolom pelaksana.">
@@ -211,7 +219,7 @@ onMounted(load);
                 </template>
                 <template #cell-actions="{ row }">
                     <AppButton size="sm" :variant="row.sppd ? 'secondary' : 'primary'" @click="manageSppd(row)">
-                        {{ row.sppd?.status === 'draft' ? 'Ubah draft' : row.sppd ? 'Lihat SPPD' : 'Buat SPPD' }}
+                        {{ row.sppd ? 'Lihat SPPD' : 'Buat SPPD' }}
                     </AppButton>
                 </template>
             </DataTable>

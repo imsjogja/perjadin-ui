@@ -6,6 +6,7 @@ import AppButton from '@/shared/components/AppButton.vue';
 import AppCard from '@/shared/components/AppCard.vue';
 import FormDatePicker from '@/shared/components/FormDatePicker.vue';
 import FormInput from '@/shared/components/FormInput.vue';
+import FormMultiSelect from '@/shared/components/FormMultiSelect.vue';
 import FormSelect from '@/shared/components/FormSelect.vue';
 import LoadingSpinner from '@/shared/components/LoadingSpinner.vue';
 import PageHeader from '@/shared/components/PageHeader.vue';
@@ -20,10 +21,11 @@ const message = ref('');
 const referenceError = ref('');
 const unitOptions = ref([]);
 const signatoryOptions = ref([]);
+const transportationOptions = ref([]);
 const editing = computed(() => Boolean(route.params.id));
 const form = reactive({
     unit_id: '',
-    dasar: '',
+    dasar: [],
     disposisi: '',
     dalam_rangka: '',
     issued_place: '',
@@ -106,11 +108,31 @@ async function searchSignatories(keyword) {
     }
 }
 
+async function loadTransportation() {
+    referenceError.value = '';
+
+    try {
+        const result = await perjadinApi.documentReferences('transportasi');
+        transportationOptions.value = (result.data ?? []).map((reference) => ({
+            value: reference.value,
+            label: reference.value,
+        }));
+        addOption(transportationOptions.value, {
+            value: form.destination.transportation,
+            label: form.destination.transportation,
+        });
+    } catch (exception) {
+        referenceError.value = exception.message;
+    }
+}
+
 function populateForm(spt) {
     const signatory = spt.signatory ?? {};
     Object.assign(form, {
         unit_id: spt.unit_id ?? '',
-        dasar: spt.dasar ?? '',
+        dasar: (spt.bases ?? [])
+            .map((basis) => basis.content)
+            .filter(Boolean),
         disposisi: spt.disposisi ?? '',
         dalam_rangka: spt.dalam_rangka ?? '',
         issued_place: spt.issued_place ?? '',
@@ -137,11 +159,15 @@ function populateForm(spt) {
         value: signatory.employee_snapshot?.nip,
         label: pegawaiLabel(signatory.employee_snapshot ?? {}),
     });
+
+    if (!form.dasar.length && spt.dasar) {
+        form.dasar = [spt.dasar];
+    }
 }
 
 async function load() {
     if (!editing.value) {
-        await searchUnits();
+        await Promise.all([searchUnits(), loadTransportation()]);
         return;
     }
 
@@ -150,7 +176,7 @@ async function load() {
     try {
         const result = await perjadinApi.spt(route.params.id);
         populateForm(result.data);
-        await searchUnits();
+        await Promise.all([searchUnits(), loadTransportation()]);
     } catch (exception) {
         message.value = exception.message;
     } finally {
@@ -215,9 +241,16 @@ onMounted(load);
                     <FormInput v-model="form.issued_place" label="Tempat terbit" required :error="fieldError('issued_place')" />
                     <FormInput v-model="form.disposisi" label="Disposisi" :error="fieldError('disposisi')" />
                 </div>
-                <label class="mt-4 block text-sm font-semibold text-dark" for="dasar">Dasar <span class="text-danger-500">*</span></label>
-                <textarea id="dasar" v-model="form.dasar" rows="3" class="mt-1 block w-full rounded-md border text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500" :class="fieldError('dasar') ? 'border-danger-500' : ''" />
-                <p v-if="fieldError('dasar')" class="mt-1 text-xs text-danger-600">{{ fieldError('dasar') }}</p>
+                <FormMultiSelect
+                    v-model="form.dasar"
+                    class="mt-4"
+                    label="Dasar"
+                    required
+                    allow-custom
+                    placeholder="Ketik dasar, lalu tekan Enter"
+                    hint="Setiap dasar disimpan sebagai tag dan akan diberi nomor otomatis pada PDF."
+                    :error="fieldError('dasar')"
+                />
                 <label class="mt-4 block text-sm font-semibold text-dark" for="dalam-rangka">Dalam rangka <span class="text-danger-500">*</span></label>
                 <textarea id="dalam-rangka" v-model="form.dalam_rangka" rows="3" class="mt-1 block w-full rounded-md border text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500" :class="fieldError('dalam_rangka') ? 'border-danger-500' : ''" />
                 <p v-if="fieldError('dalam_rangka')" class="mt-1 text-xs text-danger-600">{{ fieldError('dalam_rangka') }}</p>
@@ -225,7 +258,15 @@ onMounted(load);
 
             <AppCard title="Tujuan Perjalanan">
                 <div class="grid gap-4 md:grid-cols-2">
-                    <FormInput v-model="form.destination.transportation" label="Transportasi" required :error="fieldError('destination.transportation')" />
+                    <FormSelect
+                        v-model="form.destination.transportation"
+                        label="Transportasi"
+                        required
+                        searchable
+                        placeholder="Pilih transportasi"
+                        :options="transportationOptions"
+                        :error="fieldError('destination.transportation')"
+                    />
                     <FormInput v-model="form.destination.duration_days" label="Lama perjalanan (hari)" type="number" required :error="fieldError('destination.duration_days')" />
                     <FormInput v-model="form.destination.departure_place" label="Tempat berangkat" required :error="fieldError('destination.departure_place')" />
                     <FormInput v-model="form.destination.destination_place" label="Tujuan" required :error="fieldError('destination.destination_place')" />

@@ -22,6 +22,9 @@ const spt = ref(null);
 const followerNips = ref([]);
 const unitOptions = ref([]);
 const signatoryOptions = ref([]);
+const travelLevelOptions = ref([]);
+const travelTypeOptions = ref([]);
+const budgetAccountOptions = ref([]);
 const form = reactive({
     traveller_nip: '',
     order_giver: '',
@@ -104,6 +107,30 @@ async function searchSignatories(keyword) {
     }
 }
 
+async function loadReferenceOptions(type, options, selectedValue) {
+    const result = await perjadinApi.documentReferences(type);
+    options.value = (result.data ?? []).map((reference) => ({
+        value: reference.value,
+        label: reference.value,
+    }));
+    addOption(options.value, {
+        value: selectedValue,
+        label: selectedValue,
+    });
+}
+
+async function loadDocumentReferences() {
+    try {
+        await Promise.all([
+            loadReferenceOptions('tingkat-perjalanan', travelLevelOptions, form.travel_level),
+            loadReferenceOptions('jenis-perjalanan', travelTypeOptions, form.travel_type),
+            loadReferenceOptions('mata-anggaran', budgetAccountOptions, form.budget_account),
+        ]);
+    } catch (exception) {
+        message.value = exception.message;
+    }
+}
+
 watch(() => form.traveller_nip, (nip) => {
     followerNips.value = followerNips.value.filter((followerNip) => followerNip !== nip);
 });
@@ -155,7 +182,7 @@ async function loadSpt() {
             const sptResult = await perjadinApi.spt(result.data.spt_id);
             spt.value = sptResult.data;
             populateDraft(result.data);
-            await searchUnits();
+            await Promise.all([searchUnits(), loadDocumentReferences()]);
             return;
         }
 
@@ -164,7 +191,7 @@ async function loadSpt() {
         form.issued_place = result.data.issued_place;
         form.issued_date = dateValue(result.data.issued_date);
         form.traveller_nip = String(route.query.traveller_nip ?? '');
-        await searchUnits();
+        await Promise.all([searchUnits(), loadDocumentReferences()]);
     } catch (exception) {
         message.value = exception.message;
     } finally {
@@ -234,8 +261,22 @@ onMounted(loadSpt);
 
             <AppCard title="Rencana Perjalanan">
                 <div class="grid gap-4 md:grid-cols-2">
-                    <FormInput v-model="form.travel_level" label="Tingkat perjalanan" :error="fieldError('travel_level')" />
-                    <FormInput v-model="form.travel_type" label="Jenis perjalanan" :error="fieldError('travel_type')" />
+                    <FormSelect
+                        v-model="form.travel_level"
+                        label="Tingkat perjalanan"
+                        searchable
+                        placeholder="Pilih tingkat perjalanan"
+                        :options="travelLevelOptions"
+                        :error="fieldError('travel_level')"
+                    />
+                    <FormSelect
+                        v-model="form.travel_type"
+                        label="Jenis perjalanan"
+                        searchable
+                        placeholder="Pilih jenis perjalanan"
+                        :options="travelTypeOptions"
+                        :error="fieldError('travel_type')"
+                    />
                     <FormDatePicker v-model="form.departure_date" label="Tanggal berangkat" required :error="fieldError('departure_date')" />
                     <FormDatePicker v-model="form.return_date" label="Tanggal kembali" required :error="fieldError('return_date')" />
                     <FormSelect
@@ -250,7 +291,14 @@ onMounted(loadSpt);
                         :error="fieldError('budget_agency')"
                         @search="searchUnits"
                     />
-                    <FormInput v-model="form.budget_account" label="Mata anggaran" :error="fieldError('budget_account')" />
+                    <FormSelect
+                        v-model="form.budget_account"
+                        label="Mata anggaran"
+                        searchable
+                        placeholder="Pilih mata anggaran"
+                        :options="budgetAccountOptions"
+                        :error="fieldError('budget_account')"
+                    />
                     <FormInput v-model="form.issued_place" label="Tempat terbit" required :error="fieldError('issued_place')" />
                     <FormDatePicker v-model="form.issued_date" label="Tanggal terbit" required :error="fieldError('issued_date')" />
                 </div>

@@ -14,7 +14,8 @@
     {
         "section": "Referensi",
         "items": [
-            { "label": "Cari Pegawai", "icon": "UsersIcon", "route": "pegawai.index", "color": "purple" }
+            { "label": "Cari Pegawai", "icon": "UsersIcon", "route": "pegawai.index", "color": "purple" },
+            { "label": "Referensi Dokumen", "icon": "ClipboardDocumentListIcon", "route": "document-reference.index", "color": "teal", "permission": "settings.manage" }
         ]
     },
     {

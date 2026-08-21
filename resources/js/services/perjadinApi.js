@@ -103,6 +103,16 @@ export const perjadinApi = {
     updateSpt: (id, payload) => request(`/spts/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
     units: (params) => request(`/references/units${queryString(params)}`),
     pegawai: (params) => request(`/references/pegawai${queryString(params)}`),
+    documentReferences: (type) => request(`/references/${type}`),
+    createDocumentReference: (type, payload) => request(`/references/${type}`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    }),
+    updateDocumentReference: (type, id, payload) => request(`/references/${type}/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+    }),
+    deleteDocumentReference: (type, id) => request(`/references/${type}/${id}`, { method: 'DELETE' }),
     assignees: (sptId) => request(`/spts/${sptId}/assignees`),
     addAssignees: (sptId, nips) => request(`/spts/${sptId}/assignees`, {
         method: 'POST',

@@ -44,6 +44,7 @@ function syncKeyword() {
 }
 
 function openMenu() {
+    if (!isOpen.value) keyword.value = '';
     isOpen.value = true;
     nextTick(() => searchInput.value?.focus());
 }
@@ -146,6 +147,7 @@ onBeforeUnmount(() => {
                         class="block w-full rounded-md border pr-10 text-sm shadow-sm min-h-10 focus:border-brand-500 focus:ring-brand-500 disabled:bg-light disabled:text-slate-400"
                         :class="error ? 'border-danger-500' : ''"
                         @focus="openMenu"
+                        @click="openMenu"
                         @input="onSearch($event.target.value)"
                         @keydown="onKeydown"
                     />

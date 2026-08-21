@@ -11,7 +11,7 @@ defineProps({
 </script>
 
 <template>
-    <section class="card overflow-hidden">
+    <section class="card">
         <header v-if="title || $slots.header" class="flex items-center justify-between gap-4 border-b px-4 py-3">
             <div>
                 <slot name="header">

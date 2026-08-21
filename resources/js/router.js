@@ -104,6 +104,12 @@ const routes = [
         component: () => import('./contexts/administration/pages/DocumentNumberFormat.vue'),
         meta: { title: 'Format Nomor Dokumen', permission: 'settings.manage' },
     },
+    {
+        path: '/administrasi/referensi',
+        name: 'document-reference.index',
+        component: () => import('./contexts/administration/pages/DocumentReferenceIndex.vue'),
+        meta: { title: 'Referensi Dokumen', permission: 'settings.manage' },
+    },
     { path: '/:pathMatch(.*)*', redirect: '/' },
 ];
 

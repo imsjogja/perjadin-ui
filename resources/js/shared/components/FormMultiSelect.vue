@@ -12,6 +12,7 @@ const props = defineProps({
     required: { type: Boolean, default: false },
     disabled: { type: Boolean, default: false },
     excludedValues: { type: Array, default: () => [] },
+    allowCustom: { type: Boolean, default: false },
 });
 
 const emit = defineEmits(['update:modelValue', 'search']);
@@ -71,6 +72,15 @@ function selectOption(option) {
     isOpen.value = false;
 }
 
+function addCustomOption() {
+    const value = keyword.value.trim();
+    if (!value || selectedSet.value.has(value) || excludedSet.value.has(value)) return;
+
+    emit('update:modelValue', [...selectedValues.value, value]);
+    keyword.value = '';
+    isOpen.value = false;
+}
+
 function removeOption(value) {
     emit('update:modelValue', selectedValues.value.filter((item) => item !== String(value)));
 }
@@ -80,9 +90,17 @@ function onKeydown(event) {
     if (event.key === 'Backspace' && !keyword.value && selectedValues.value.length) {
         removeOption(selectedValues.value.at(-1));
     }
-    if (event.key === 'Enter' && availableOptions.value.length === 1) {
-        event.preventDefault();
-        selectOption(availableOptions.value[0]);
+    if (event.key === 'Enter') {
+        if (availableOptions.value.length === 1) {
+            event.preventDefault();
+            selectOption(availableOptions.value[0]);
+            return;
+        }
+
+        if (props.allowCustom && keyword.value.trim()) {
+            event.preventDefault();
+            addCustomOption();
+        }
     }
 }
 
@@ -157,8 +175,17 @@ onBeforeUnmount(() => {
                     >
                         {{ option.label }}
                     </button>
+                    <button
+                        v-if="allowCustom && keyword.trim() && !selectedSet.has(keyword.trim())"
+                        type="button"
+                        class="block w-full px-3 py-2 text-left font-semibold text-brand-700 hover:bg-brand-50 focus:bg-brand-50 focus:outline-none"
+                        @mousedown.prevent
+                        @click="addCustomOption"
+                    >
+                        Tambahkan “{{ keyword.trim() }}”
+                    </button>
                     <p v-if="!availableOptions.length" class="px-3 py-2 text-slate-500">
-                        {{ keyword ? 'Tidak ada data yang sesuai.' : 'Ketik untuk mencari.' }}
+                        {{ allowCustom && keyword ? 'Tekan Enter untuk menambahkan.' : keyword ? 'Tidak ada data yang sesuai.' : 'Ketik untuk mencari.' }}
                     </p>
                 </div>
             </div>
