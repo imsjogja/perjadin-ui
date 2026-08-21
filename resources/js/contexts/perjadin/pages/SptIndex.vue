@@ -13,7 +13,7 @@ import AppCard from '@/shared/components/AppCard.vue';
 import DataTable from '@/shared/components/DataTable.vue';
 import ErrorState from '@/shared/components/ErrorState.vue';
 import FormDatePicker from '@/shared/components/FormDatePicker.vue';
-import FormInput from '@/shared/components/FormInput.vue';
+import FormSelect from '@/shared/components/FormSelect.vue';
 import PageHeader from '@/shared/components/PageHeader.vue';
 import { useToast } from '@/shared/composables/useToast';
 import { perjadinApi } from '@/services/perjadinApi';
@@ -24,12 +24,13 @@ const loading = ref(true);
 const error = ref('');
 const actionError = ref('');
 const rows = ref([]);
+const assigneeOptions = ref([]);
 const archivingId = ref('');
 const deletingId = ref('');
 const filters = reactive({
     date_from: '',
     date_to: '',
-    assignee: '',
+    assignee_id: '',
     status: '',
 });
 const statusOptions = [
@@ -91,7 +92,7 @@ function filterPayload() {
         per_page: 100,
         date_from: filters.date_from,
         date_to: filters.date_to,
-        assignee: filters.assignee.trim(),
+        assignee_id: filters.assignee_id,
         status: filters.status,
     };
 }
@@ -110,10 +111,22 @@ async function load() {
     }
 }
 
+async function loadAssigneeOptions(query = '') {
+    try {
+        const result = await perjadinApi.sptAssigneeOptions({ q: query });
+        const selectedOption = assigneeOptions.value.find((option) => String(option.value) === String(filters.assignee_id));
+        const options = result.data ?? [];
+        assigneeOptions.value = [...(selectedOption ? [selectedOption] : []), ...options]
+            .filter((option, index, collection) => collection.findIndex((item) => String(item.value) === String(option.value)) === index);
+    } catch (exception) {
+        actionError.value = exception.message;
+    }
+}
+
 function resetFilters() {
     filters.date_from = '';
     filters.date_to = '';
-    filters.assignee = '';
+    filters.assignee_id = '';
     filters.status = '';
     load();
 }
@@ -156,7 +169,10 @@ async function deleteSpt(row) {
     }
 }
 
-onMounted(load);
+onMounted(() => {
+    load();
+    loadAssigneeOptions();
+});
 </script>
 
 <template>
@@ -168,11 +184,19 @@ onMounted(load);
             </AppButton>
         </PageHeader>
 
-        <AppCard class="mb-4" title="Filter Surat Tugas" subtitle="Saring berdasarkan tanggal penerbitan, nama pelaksana, dan status dokumen.">
+        <AppCard class="mb-4" title="Filter Surat Tugas" subtitle="Saring berdasarkan tanggal penerbitan, pelaksana, dan status dokumen.">
             <form class="grid gap-4 md:grid-cols-2 xl:grid-cols-5" @submit.prevent="load">
                 <FormDatePicker v-model="filters.date_from" label="Tanggal dari" :max="filters.date_to" />
                 <FormDatePicker v-model="filters.date_to" label="Tanggal sampai" :min="filters.date_from" />
-                <FormInput v-model="filters.assignee" label="Nama pegawai" placeholder="Cari pelaksana dalam SPT" />
+                <FormSelect
+                    v-model="filters.assignee_id"
+                    label="Pegawai pelaksana"
+                    :options="assigneeOptions"
+                    searchable
+                    endpoint="spt-assignee-options"
+                    placeholder="Pilih atau cari pegawai…"
+                    @search="loadAssigneeOptions"
+                />
                 <label class="block text-sm font-semibold text-dark">
                     Status SPT
                     <select

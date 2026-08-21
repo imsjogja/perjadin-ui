@@ -99,6 +99,7 @@ export const perjadinApi = {
         body: JSON.stringify(payload),
     }),
     spts: (params) => request(`/spts${queryString(params)}`),
+    sptAssigneeOptions: (params) => request(`/spts/filter-options/assignees${queryString(params)}`),
     spt: (id) => request(`/spts/${id}`),
     createSpt: (payload) => request('/spts', { method: 'POST', body: JSON.stringify(payload) }),
     updateSpt: (id, payload) => request(`/spts/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
