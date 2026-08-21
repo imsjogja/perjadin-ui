@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import {
     Bars3Icon,
     ChevronDownIcon,
@@ -18,6 +18,7 @@ import { resolveIconColor } from '../shared/icon-colors';
 import { useAuth } from '../shared/composables/useAuth';
 
 const route = useRoute();
+const router = useRouter();
 const { can, isAuthenticated, user, logout, refreshUser } = useAuth();
 const sidebarOpen = ref(false);
 const userOpen = ref(false);
@@ -49,6 +50,7 @@ function iconFor(name) {
 async function signOut() {
     await logout();
     userOpen.value = false;
+    await router.replace({ name: 'login' });
 }
 
 onMounted(async () => {
